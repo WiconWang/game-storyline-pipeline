@@ -10,9 +10,9 @@ author: Hermes
 license: MIT
 tags: [gaming, video, pipeline]
 related_skills:
-  - game-storyline-dialogue-crawler
-  - game-storyline-video-crawler
-  - game-storyline-bgm-crawler
+  - mini-movie-dialogue-crawler
+  - mini-movie-screenshot-crawler
+  - mini-movie-bgm-crawler
   - mini-movie-intro-maker
   - mini-movie-maker
 ---
@@ -71,9 +71,9 @@ dialogue-crawler      video-crawler         bgm-crawler / intro-maker
 
 | 阶段 | 子 skill | 登记 kind | 用法 |
 |---|---|---|---|
-| 1 台词 | game-storyline-dialogue-crawler | `dialog` | 详见该 skill 的 SKILL.md |
-| 2 视频 | game-storyline-video-crawler | `video`（seg_no=quest 内剧情序号） | 详见该 skill 的 SKILL.md |
-| BGM | game-storyline-bgm-crawler | `bgm`（版本级） | 详见该 skill 的 SKILL.md |
+| 1 台词 | mini-movie-dialogue-crawler | `dialog` | 详见该 skill 的 SKILL.md |
+| 2 视频 | mini-movie-screenshot-crawler | `video`（seg_no=quest 内剧情序号） | 详见该 skill 的 SKILL.md |
+| BGM | mini-movie-bgm-crawler | `bgm`（版本级） | 详见该 skill 的 SKILL.md |
 | 封面 | mini-movie-intro-maker | `cover`/`outro`（版本级；底图用 `--bg` 显式指定，不入库） | 详见该 skill 的 SKILL.md |
 | 3 浓缩 | mini-movie-maker | 认领 quest | 详见该 skill 的 SKILL.md |
 

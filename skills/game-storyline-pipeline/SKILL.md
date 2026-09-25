@@ -128,7 +128,7 @@ mmm add-asset --game genshin --version 1.6 --slug midsummer-islands \
 | 闸口 | 时机 | 审阅物 | 规则 |
 |---|---|---|---|
 | 0 | 各采集阶段完成后 | 见下方各阶段验收点 | 向用户报告并确认产物，无误才进入下一阶段 |
-| 1 | A 模式 `mmm run narrate` 后 | `tasks/{task_id}/narration.md` | 必停，用户确认才 `select`；B 模式跳过 |
+| 1 | A 模式 `mmm run narrate` 后 | `tasks/{task_id}/narration.md` | 必停，用户确认才 `select`；B 模式跳过；**用户改 md 后须 `mmm narrate-sync --task <id>` 回写 json**（用户主动告知才执行，不做自动触发） |
 | 2 | `mmm run select` 后 | `tasks/{task_id}/storyboard.html` | 必停，用户可能手改 edl.json |
 | 3 | A 模式 `mmm run tts-plan` 后 | `tasks/{task_id}/tts_plan.html` | 逐句核对发音/停顿/语气；**付费 TTS 前必须用户明确说「确认，接受费用」** |
 

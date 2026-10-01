@@ -40,6 +40,22 @@ echo "MINIMOVIE_DATA_ROOT=$MINIMOVIE_DATA_ROOT"   # 必须非空才可进入任�
 > 每条 Bash 调用都是独立 shell，export 不跨调用持久——**每条涉盘命令前重复此检测**（或将路径直接内联进命令）。
 > 旧变量 `MMM_DATA_ROOT` 已废除：遇到即报错，请迁移（`export MINIMOVIE_DATA_ROOT=$MMM_DATA_ROOT` 并写入 `~/.minimovie`，然后 `unset MMM_DATA_ROOT`）。
 
+> ⚠️ **Agent 持久 shell 陷阱（必读）**：在 Hermes / 任何**环境变量跨调用持久**的 shell 里，
+> 调试时随手 `export MINIMOVIE_DATA_ROOT=/tmp/xxx` 会**永久覆盖** `~/.minimovie`，
+> 之后所有 `mmm` 命令（含 `db-init`）都会静默写到那个临时路径，台账被建到错误位置。
+> **铁律**：每次涉盘操作前先打印解析结果确认，而不是相信 `~/.minimovie`：
+> **多机部署前提（改 skill 前必读）**：本套 skill 在 **macOS / Windows(WSL) / Linux** 多台机器上运行，
+> 因此**任何解释器路径、venv 布局、字体安装、浏览器路径都必须平台无关或分平台说明**，
+> 严禁写死单机绝对路径（如 `~/Applications/...`、`/usr/bin/python3`、`~/.venvs/xxx/bin/python`）。
+>
+> **解释器约定**：凡需 `mmm` 的命令，用**运行 mmm 的同一个解释器** —— 激活项目 venv 后就是 `python3`；
+> 否则用环境变量显式指定（`export MMM_PYTHON=<CODE_ROOT>/.venv/bin/python`，Windows 为
+> `<CODE_ROOT>\\.venv\\Scripts\\python.exe`）。纯标准库脚本（各 crawler）任意 `python3` 均可。
+> ```bash
+> "${MMM_PYTHON:-python3}" -c "from mmm.paths import DATA_ROOT; print('DATA_ROOT =', DATA_ROOT)"
+> ```
+> 发现异常先 `unset MINIMOVIE_DATA_ROOT`；误建的 `ledger.sqlite`（0 行）直接删掉重跑 `db-init`（幂等）。
+
 工作区目录约定（统一台账 + 三层树，规范见 `docs/2026/0910-统一素材台账与命名规范.md`）：
 
 ```

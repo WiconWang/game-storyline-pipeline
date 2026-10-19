@@ -186,11 +186,17 @@ mmm task-create --game <code> --version <no> --slug <quest> [--mode narrate|raw]
 # 配置确认（铁律：逐项询问用户，见 mmm SKILL.md）
 mmm run align --task <task_id>
 mmm run index <asset_key>
+# 台词高光锁定（可跳过，产物可为空）——见 mini-movie-highlight-raw
+#   mmm locate-keep <task_id> -q "台词" --pad 1.2 -w   # 写入 keep_requirements
+#   mmm fix-keep  <task_id>                            # 吸附到 ASR 语音边界
 # A 模式：narrate →【闸口1】→ select →【闸口2】→ tts-plan →【闸口3】→ tts → render
 # B 模式：select --mode raw →【闸口2】→ render
 ```
 
 > `align --task` / `index` 会复用 3b 落盘的 `asr.json` / `shots_meta.json`，**不要加 `--force`**，否则白跑夜间重活。
+
+> **高光锁定必须在 `select` 之前**：`select_raw` 读取 `task.json.keep_requirements` 强制保留这些段，
+> 写晚了不生效。**但它不是必须环节**——没锁定任何台词照样能出片，只是金句可能被当低价值镜头丢掉。
 
 ## 命名规范
 

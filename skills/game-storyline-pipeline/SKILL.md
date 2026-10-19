@@ -185,7 +185,7 @@ mmm run align  <asset_key>     # 台词到手可顺带提前 ASR
 mmm task-create --game <code> --version <no> --slug <quest> [--mode narrate|raw]
 # 配置确认（铁律：逐项询问用户，见 mmm SKILL.md）
 mmm run align --task <task_id>
-mmm run index <asset_key>
+mmm run index <asset_key> --task <task_id>
 # 台词高光锁定（可跳过，产物可为空）——见 mini-movie-highlight-raw
 #   mmm locate-keep <task_id> -q "台词" --pad 1.2 -w   # 写入 keep_requirements
 #   mmm fix-keep  <task_id>                            # 吸附到 ASR 语音边界
@@ -212,6 +212,7 @@ mmm run index <asset_key>
 | 忘设数据根（数据误写进代码目录） | `MINIMOVIE_DATA_ROOT` 为空 | 按「环境准备」兜底链解析，误写数据 mv 回工作区 |
 | 台账路径悬空（asset.path 指向不存在文件） | `mmm locate <task_id>` 核对 materials 路径 | 源在则重登记；源丢则重跑对应采集阶段 |
 | 跨盘迁移截断 | 跨盘 `mv` = 复制+删除，中途失败会截断 | 跨盘迁移用 `cp -a` + 校验 + 手动删源 |
+| 并入别处迁来的半成品数据根 | 目标根已有其它版本，源根 id 从 1 起会撞车 | 先体检再看能复用多少、再按偏移重映射 —— 见 `mini-movie-ledger-ops/references/ledger-migration.md` §0.5（体检）/ §0.6（ID 重映射，含任务级 JSON 里的 asset_id） |
 
 （mmm 级异常——sqlite 锁、台账重建、断点续跑——见 mini-movie-maker 的 SKILL.md；采集级异常见对应子 skill 的 SKILL.md。）
 

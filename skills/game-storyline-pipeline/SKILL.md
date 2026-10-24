@@ -5,7 +5,7 @@ description: >-
   mmm 浓缩（A 解说短视频 / B 原声高光直拼 / C 混合解说）。串联五个子 skill，产物统一落工作区。
   当用户要：一键成片、剧情浓缩、剧情解说视频、原声高光、混合解说、原声为主讲述穿插、
   从 wiki 到成片、跑管线时使用。
-  触发词：一键成片、管线、剧情浓缩、剧情解说、原声直拼、混合解说、模式C、game-storyline-pipeline。
+  触发词：一键成片、管线、剧情浓缩、剧情解说、原声直拼、混合解说、串讲、模式C、game-storyline-pipeline。
 version: 1.1.0
 author: Hermes
 license: MIT
@@ -20,7 +20,7 @@ related_skills:
 
 # 游戏剧情成片管线
 
-把游戏剧情 wiki + bilibili 实录 + 版本物料，经 mmm 浓缩为解说短视频（A 模式）、原声高光直拼（B 模式）或混合解说（C 模式）。本 skill 只负责编排与闸口，各阶段的采集/合成用法见对应子 skill 的 SKILL.md。
+把游戏剧情 wiki + bilibili 实录 + 版本物料，经 mmm 浓缩为**讲述模式**（解说短视频）、**高光模式**（原声高光直拼）或**串讲模式**（原声为主 + 讲述串联）。本 skill 只负责编排与闸口，各阶段的采集/合成用法见对应子 skill 的 SKILL.md。
 
 ## 环境准备（铁律：每次会话首跑必做）
 
@@ -94,7 +94,7 @@ dialogue-crawler      video-crawler         bgm-crawler / intro-maker
 | 封面 | mini-movie-intro-maker | `cover`/`outro`（版本级；底图用 `--bg` 显式指定，不入库） | 详见该 skill 的 SKILL.md |
 | 3 浓缩 | mini-movie-maker | 认领 quest | 详见该 skill 的 SKILL.md |
 
-## A/B/C 模式选择（任务开始必问）
+## 模式选择（任务开始必问）
 
 进入 mmm 阶段前，Agent 必须判断/询问用哪种模式。三者的**根本差别是「讲述与原声的比例」**：
 
@@ -106,24 +106,24 @@ dialogue-crawler      video-crawler         bgm-crawler / intro-maker
 | TTS 计费 | 全篇 | 0 | **只念桥接句**（约为 A 的 1/3） |
 | 适合场景 | 玩过游戏的人想听剧情梳理 | 只想看名场面 | **没玩过的人想看懂故事，又想听角色原声** |
 
-- **A 模式**：LLM 解说 + TTS 配音，链路重，闸口 1/2/3
-- **B 模式**：原声高光直拼，无解说无配音，LOW LLM 标注挑选，0 次 HIGH 调用，成本低，仅闸口 2
-- **C 模式**：预算选片 + 桥接句，讲述只补「被跳过的空隙」，闸口 1'/2/3
+- **讲述模式**（`--mode narrate`）：LLM 解说 + TTS 配音，链路重，闸口 1/2/3
+- **高光模式**（`--mode raw`）：原声高光直拼，无解说无配音，LOW LLM 标注挑选，0 次 HIGH 调用，成本低，仅闸口 2
+- **串讲模式**（`--mode mixed`）：预算选片 + 桥接句，讲述只补「被跳过的空隙」，闸口 1'/2/3
 
 不明确时用 `AskUserQuestion`，**把三者观感差异讲清楚再让用户选**（不要只报模式代号）：
 
 - 用户说「想听懂剧情但不想听全程解说」→ **C**
 - 用户说「只要把剧情讲清楚」→ A
 - 用户说「只想看高光，不需要叙事线」→ B
-- 用户说「2 小时的剧情压成 20 分钟」→ **C**（A 模式在长素材上讲述会过密）
+- 用户说「2 小时的剧情压成 20 分钟」→ **串讲**（讲述模式在长素材上讲述会过密）
 
 弃选默认 B（低成本试水）。
 
-## 成片模板四段式（A/B/C 共用）
+## 成片模板四段式（三模式共用）
 
 固定顺序：**Cover（封面图·默认2s）→ 片头（外部视频·可选）→ 正片 body → 片尾（图片·默认2s）**。task.json `composition` 未声明的段缺省跳过。
 
-选完 A/B 后逐段确认（用户可一次答多项）：
+选完模式后逐段确认（用户可一次答多项）：
 
 | 段 | 内容 | 询问要点 |
 |---|---|---|
@@ -161,10 +161,10 @@ mmm add-asset --game genshin --version 1.6 --slug midsummer-islands \
 | 闸口 | 时机 | 审阅物 | 规则 |
 |---|---|---|---|
 | 0 | 各采集阶段完成后 | 见下方各阶段验收点 | 向用户报告并确认产物，无误才进入下一阶段 |
-| 1 | A 模式 `mmm run narrate` 后 | `tasks/{task_id}/narration.md` | 必停，用户确认才 `select`；B/C 模式跳过；**用户改 md 后须 `mmm narrate-sync --task <id>` 回写 json**（用户主动告知才执行，不做自动触发） |
-| **1'** | **C 模式 `mmm run bridge` 后** | **`tasks/{task_id}/mixed_plan.md`** | **必停**。审「开场白 + 原声/讲述交替序列」：桥接句是否讲清因果、开场白是否只是引子、原声选得对不对。用户改 md 后须 `mmm bridge-sync --task <id>` 回写 json |
+| 1 | 讲述模式 `mmm run narrate` 后 | `tasks/{task_id}/narration.md` | 必停，用户确认才 `select`；高光/串讲模式跳过；**用户改 md 后须 `mmm narrate-sync --task <id>` 回写 json**（用户主动告知才执行，不做自动触发） |
+| **1'** | **串讲模式 `mmm run bridge` 后** | **`tasks/{task_id}/mixed_plan.md`** | **必停**。审「开场白 + 原声/讲述交替序列」：桥接句是否讲清因果、开场白是否只是引子、原声选得对不对。用户改 md 后须 `mmm bridge-sync --task <id>` 回写 json |
 | 2 | `mmm run select` 后 | `tasks/{task_id}/storyboard.html` | 必停，用户可能手改 edl.json |
-| 3 | A/C 模式 `mmm run tts-plan` 后 | `tasks/{task_id}/tts_plan.html` | 逐句核对发音/停顿/语气；**付费 TTS 前必须用户明确说「确认，接受费用」** |
+| 3 | 讲述/串讲模式 `mmm run tts-plan` 后 | `tasks/{task_id}/tts_plan.html` | 逐句核对发音/停顿/语气；**付费 TTS 前必须用户明确说「确认，接受费用」** |
 
 **闸口0 各阶段验收点**：
 
@@ -175,7 +175,7 @@ mmm add-asset --game genshin --version 1.6 --slug midsummer-islands \
 | BGM | BPM / 时长 / RMS / 轻柔标签 |
 | 封面 | 封面效果展示 |
 
-**闸口铁律**（A 模式闸口1/2/3 通用）：
+**闸口铁律**（讲述/串讲模式的闸口1/1'/2/3 通用）：
 
 1. 每闸口完成后**必停**，通知用户审阅，用户口头确认「通过」即闸门开关；仅说「看一下」「先跑」不算确认。
 2. 闸口3 必须明确告知费用（dry 的 Edge TTS 免费但 LLM 可能计费；prod MiniMax 按字符计费），用户明确说「确认，接受费用」后才能 `tts-approve`。
@@ -207,15 +207,15 @@ mmm run index <asset_key> --task <task_id>
 # 台词高光锁定（可跳过，产物可为空）——见 mini-movie-highlight-raw
 #   mmm locate-keep <task_id> -q "台词" --pad 1.2 -w   # 写入 keep_requirements
 #   mmm fix-keep  <task_id>                            # 吸附到 ASR 语音边界
-# A 模式：narrate →【闸口1】→ select →【闸口2】→ tts-plan →【闸口3】→ tts → render
-# B 模式：select --mode raw →【闸口2】→ render
-# C 模式：bridge →【闸口1'】→ select --mode mixed →【闸口2】→ tts-plan →【闸口3】→ tts → render
+# 讲述模式：narrate →【闸口1】→ select →【闸口2】→ tts-plan →【闸口3】→ tts → render
+# 高光模式：select --mode raw →【闸口2】→ render
+# 串讲模式：bridge →【闸口1'】→ select --mode mixed →【闸口2】→ tts-plan →【闸口3】→ tts → render
 ```
 
-#### C 模式的额外说明
+#### 串讲模式的额外说明
 
 `mmm run bridge` 一次完成「预算选片 → 间隙切分 → 桥接句生成 → mixed_plan.md」，
-**不需要先跑 `mmm run narrate`**（C 模式 HIGH 调用 = 0，LOW 分段缺失时由 bridge 兜底自动跑）。
+**不需要先跑 `mmm run narrate`**（串讲模式 HIGH 调用 = 0，LOW 分段缺失时由 bridge 兜底自动跑）。
 
 桥接句质量直接决定成片好坏。若对自动生成不满意，可以把提示词交给外部模型重写：
 
@@ -247,13 +247,13 @@ mmm bridge-import <task_id> --from <结果.json>
 | 台账路径悬空（asset.path 指向不存在文件） | `mmm locate <task_id>` 核对 materials 路径 | 源在则重登记；源丢则重跑对应采集阶段 |
 | 跨盘迁移截断 | 跨盘 `mv` = 复制+删除，中途失败会截断 | 跨盘迁移用 `cp -a` + 校验 + 手动删源 |
 | 并入别处迁来的半成品数据根 | 目标根已有其它版本，源根 id 从 1 起会撞车 | 先体检再看能复用多少、再按偏移重映射 —— 见 `mini-movie-ledger-ops/references/ledger-migration.md` §0.5（体检）/ §0.6（ID 重映射，含任务级 JSON 里的 asset_id） |
-| C 模式成片时长明显超出预算 | 检查 `selected.json` 的 `raw_seconds` 与 `bridge_chars` | 调 `mixed.target_minutes`（硬预算）或 `ratio_target`（原声占比），重跑 `run bridge` |
-| C 模式讲述占比过高 / 成片太碎 | `cluster_gap_sec` 太小，片段被切碎 | 调大 `cluster_gap_sec`（20 → 一段约 12 秒对话；40+ 开始出现大段留白） |
-| C 模式桥接句时序错乱（后段内容提前） | 素材被 beat summary 污染（分钟级粒度会漂移到相邻段） | 已在 2026-10-23 修复；若复现，核对 `stage_bridge.MIN_LINES_WITHOUT_SUMMARY` |
+| 串讲模式成片时长明显超出预算 | 检查 `selected.json` 的 `raw_seconds` 与 `bridge_chars` | 调 `mixed.target_minutes`（硬预算）或 `ratio_target`（原声占比），重跑 `run bridge` |
+| 串讲模式讲述占比过高 / 成片太碎 | `cluster_gap_sec` 太小，片段被切碎 | 调大 `cluster_gap_sec`（20 → 一段约 12 秒对话；40+ 开始出现大段留白） |
+| 串讲模式桥接句时序错乱（后段内容提前） | 素材被 beat summary 污染（分钟级粒度会漂移到相邻段） | 已在 2026-10-23 修复；若复现，核对 `stage_bridge.MIN_LINES_WITHOUT_SUMMARY` |
 
 （mmm 级异常——sqlite 锁、台账重建、断点续跑——见 mini-movie-maker 的 SKILL.md；采集级异常见对应子 skill 的 SKILL.md。）
 
-## C 模式调参（用户提「太碎/太慢/讲述太多」时改这三个）
+## 串讲模式调参（用户提「太碎/太慢/讲述太多」时改这些）
 
 配置在 `config/game/{game}.yaml` 的 `mixed:` 段，`task-create` 时继承到 task.json。
 
